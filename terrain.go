@@ -19,6 +19,8 @@ var (
 	size   int
 	zStart int
 	img    gg.Context
+
+	sqSize int
 )
 
 func init() {
@@ -27,11 +29,13 @@ func init() {
 
 	random = *rand.New(rand.NewSource(seed.Unix()))
 
-	size = random.Intn(15) + 25
+	size = random.Intn(256) + 1
 
-	zStart = random.Intn(25) + 10
+	sqSize = 5
 
-	img = *draw.NewContext(size*5, size*5)
+	zStart = random.Intn(256) + 1
+
+	img = *draw.NewContext(size*sqSize, size*sqSize)
 
 }
 
@@ -48,8 +52,13 @@ func main() {
 			land = assignEasy(a, b, land)
 			land.z = assignHard(landMass, land)
 			landMass[land.y][land.x] = land
+			img.DrawRectangle(float64(land.x*sqSize), float64(land.y*sqSize), float64(sqSize), float64(sqSize))
+			img.SetRGB(float64(land.x), float64(land.y), float64(land.z))
+			img.Fill()
 		}
 	}
+
+	img.SavePNG("terrain.png")
 }
 
 func assignEasy(x int, y int, land Land) Land {
