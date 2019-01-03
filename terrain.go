@@ -16,11 +16,11 @@ type Land struct {
 var (
 	seed   time.Time
 	random rand.Rand
-	size   int
+	sqSize int
+	xSize  int
+	ySize  int
 	zStart int
 	img    gg.Context
-
-	sqSize int
 )
 
 func init() {
@@ -29,29 +29,32 @@ func init() {
 
 	random = *rand.New(rand.NewSource(seed.Unix()))
 
-	size = random.Intn(256) + 1
-
 	sqSize = 5
+
+	ySize = 180
+
+	xSize = 320
 
 	zStart = random.Intn(256) + 1
 
-	img = *draw.NewContext(size*sqSize, size*sqSize)
+	img = *draw.NewContext(xSize*sqSize, ySize*sqSize)
 
 }
 
 func main() {
 	// define the landmass
-	landMass := make([][]Land, size)
+	landMass := make([][]Land, xSize)
 
 	for lands := range landMass {
-		landMass[lands] = make([]Land, size)
+		landMass[lands] = make([]Land, ySize)
 	}
 	// define the heights
 	for a, arr := range landMass {
 		for b, land := range arr {
 			land = assignEasy(a, b, land)
 			land.z = assignHard(landMass, land)
-			landMass[land.y][land.x] = land
+			//			fmt.Println("x: ", land.x, "y: ", land.y)
+			landMass[land.x][land.y] = land
 			img.DrawRectangle(float64(land.x*sqSize), float64(land.y*sqSize), float64(sqSize), float64(sqSize))
 			img.SetRGB(float64(land.x), float64(land.y), float64(land.z))
 			img.Fill()
@@ -72,10 +75,11 @@ func assignHard(mass [][]Land, land Land) int {
 	var calc int
 	top, left := false, false
 
-	if land.x == 0 {
+	//	fmt.Println(land.x, land.y)
+	if land.y == 0 {
 		left = true
 	}
-	if land.y == 0 {
+	if land.x == 0 {
 		top = true
 	}
 
@@ -85,11 +89,11 @@ func assignHard(mass [][]Land, land Land) int {
 	case top && left:
 		calc = zStart
 	case top && !left:
-		calc = determineHeight(mass[0][land.x-1].z)
+		calc = determineHeight(mass[0][land.y-1].z)
 	case !top && left:
-		calc = determineHeight(mass[land.y-1][0].z)
+		calc = determineHeight(mass[land.x-1][0].z)
 	case !top && !left:
-		calc = determineHeight(mass[land.y-1][land.x-1].z)
+		calc = determineHeight(mass[land.x-1][land.y-1].z)
 	default:
 		calc = 0
 	}
